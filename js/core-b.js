@@ -119,7 +119,7 @@ function renderPads() {
   const pads = filteredPads();
   els.padsGrid.dataset.size = state.padSize;
   els.padsGrid.innerHTML = pads.map((pad, index) => `
-    <button class="sound-pad ${pad.id === state.selectedPadId ? 'is-selected' : ''} ${isPadPlaying(pad.id) ? 'is-playing' : ''}" data-pad-id="${pad.id}" style="--pad-accent:${pad.color};animation-delay:${Math.min(index * 25, 200)}ms" type="button">
+    <button class="sound-pad ${pad.id === state.selectedPadId ? 'is-selected' : ''} ${isPadPlaying(pad.id) ? 'is-playing' : ''}" data-pad-id="${pad.id}" draggable="true" style="--pad-accent:${pad.color};animation-delay:${Math.min(index * 25, 200)}ms" type="button">
       <span class="sound-pad__top">
         <span class="sound-pad__icon"><svg><use href="#i-wave"></use></svg></span>
         <span class="sound-pad__mode">${escapeHtml(modeLabel(pad.playbackMode))}</span>
@@ -163,7 +163,7 @@ function renderEffects() {
     setEffectControl('bass', 0);
     setEffectControl('reverb', 0);
     setEffectControl('echo', 0);
-    setEffectControl('pan', 0);
+    setEffectControl('pan',0); setEffectControl('treble',0); setEffectControl('lowpass',20000); setEffectControl('drive',0); setEffectControl('compression',0); setEffectControl('pitch',0);
     els.playbackModeSelect.value = 'restart';
     els.shortcutCapture.textContent = 'None';
     return;
@@ -181,7 +181,12 @@ function setEffectControl(name, value) {
     bass: [els.bassRange, els.bassOut, `${value > 0 ? '+' : ''}${value} dB`],
     reverb: [els.reverbRange, els.reverbOut, `${value}%`],
     echo: [els.echoRange, els.echoOut, `${value}%`],
-    pan: [els.panRange, els.panOut, value === 0 ? 'Center' : `${Math.abs(value)} ${value < 0 ? 'L' : 'R'}`],
+    pan:[els.panRange,els.panOut,value===0?'Center':`${Math.abs(value)} ${value<0?'L':'R'}`],
+    treble:[els.trebleRange,els.trebleOut,`${value>0?'+':''}${value} dB`],
+    lowpass:[els.lowpassRange,els.lowpassOut,value>=19500?'20 kHz':`${(value/1000).toFixed(value<10000?1:0)} kHz`],
+    drive:[els.driveRange,els.driveOut,`${value}%`],
+    compression:[els.compressionRange,els.compressionOut,`${value}%`],
+    pitch:[els.pitchRange,els.pitchOut,`${value>0?'+':''}${value} st`],
   };
   const entry = map[name];
   if (!entry) return;

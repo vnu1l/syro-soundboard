@@ -5,14 +5,16 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const uid = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-const STORAGE_KEY = 'syro-soundboard-state-v1';
-const SETTINGS_KEY = 'syro-soundboard-settings-v1';
+const STORAGE_KEY = 'syro-soundboard-state-v2';
+const SETTINGS_KEY = 'syro-soundboard-settings-v2';
+const ONBOARDING_KEY = 'syro-soundboard-onboarding-v2';
+const TUTORIAL_KEY = 'syro-soundboard-tutorial-v2';
 const DB_NAME = 'syro-soundboard-audio';
 const DB_VERSION = 1;
 const AUDIO_STORE = 'audio';
 const accentPalette = ['#955cff', '#8b68ff', '#b05cff', '#7657ef', '#ad6cf2', '#7868d9'];
 
-const defaultEffects = () => ({ volume: 100, bass: 0, reverb: 0, echo: 0, pan: 0 });
+const defaultEffects = () => ({ volume:100,bass:0,reverb:0,echo:0,pan:0,treble:0,lowpass:20000,drive:0,compression:0,pitch:0 });
 
 const state = {
   boardTitle: 'My Soundboard',
@@ -29,17 +31,19 @@ const state = {
   maxHistory: 120,
   dirty: false,
   autosaveTimer: null,
+  timelines: [],
+  activeTimelineIndex: 0,
 };
 
 const settings = {
-  motion: true,
-  uiSounds: false,
-  autosave: true,
+  motion:true, uiSounds:false, autosave:true, hoverGlow:true, compactUi:false,
+  inAppNotifications:true, desktopNotifications:false, backgroundNotifications:false, notificationSound:false, notificationDuration:2500,
+  persistentStorage:true, confirmDelete:false, maxPolyphony:8, defaultPlaybackMode:'restart', autoOpenTimeline:false
 };
 
 const runtime = {
   audioContext: null,
-  masterGain: null,
+  masterGain:null, captureDestination:null,
   buffers: new Map(),
   active: new Map(),
   reverbImpulse: null,
@@ -53,7 +57,9 @@ const runtime = {
   recordTimerId: null,
   recordAnalyser: null,
   recordAnimationId: null,
-  dragDepth: 0,
+  dragDepth:0, recordTarget:'new-pad', permissionGuideType:null,
+  timelineSelection:new Set(), timelineVisibleSources:new Set(['board','mic','system']), timelinePanning:false, timelinePanStartX:0, timelinePanStartScroll:0,
+  liveSession:null, liveTimerId:null, timelineVoices:[], timelinePlaybackRaf:0, timelinePlaybackStartedAt:0, tutorialStep:0, libraryTab:'sounds', libraryCategory:'all', librarySearch:'',
 };
 
 const els = {
@@ -67,6 +73,9 @@ const els = {
   saveBtn: $('#saveBtn'),
   searchInput: $('#searchInput'),
   settingsBtn: $('#settingsBtn'),
+  timelineToggleBtn:$('#timelineToggleBtn'), timelinePanel:$('#timelinePanel'), timelineViewport:$('#timelineViewport'), timelineCanvas:$('#timelineCanvas'), timelineRuler:$('#timelineRuler'), timelinePlayhead:$('#timelinePlayhead'), timelineName:$('#timelineName'), timelineMeta:$('#timelineMeta'), timelinePrevBtn:$('#timelinePrevBtn'), timelineNextBtn:$('#timelineNextBtn'), timelineNewBtn:$('#timelineNewBtn'), timelinePlayBtn:$('#timelinePlayBtn'), timelineStopBtn:$('#timelineStopBtn'), timelineAddBtn:$('#timelineAddBtn'), timelineRecordBtn:$('#timelineRecordBtn'), timelineLiveBtn:$('#timelineLiveBtn'), timelineStopLiveBtn:$('#timelineStopLiveBtn'), timelineZoomRange:$('#timelineZoomRange'), timelineFileInput:$('#timelineFileInput'),
+  libraryBtn:$('#libraryBtn'), libraryDrawer:$('#libraryDrawer'), libraryScrim:$('#libraryScrim'), libraryCloseBtn:$('#libraryCloseBtn'), librarySearchInput:$('#librarySearchInput'), libraryGrid:$('#libraryGrid'), libraryCategories:$('#libraryCategories'),
+  selectionContextChip:$('#selectionContextChip'),
   newGroupBtn: $('#newGroupBtn'),
   groupsList: $('#groupsList'),
   allCount: $('#allCount'),
@@ -107,6 +116,9 @@ const els = {
   uiSoundsToggle: $('#uiSoundsToggle'),
   autosaveToggle: $('#autosaveToggle'),
   exportBtn: $('#exportBtn'),
+  settingsTabs:$('#settingsTabs'), settingsContent:$('#settingsContent'), permissionGuideModal:$('#permissionGuideModal'), permissionGuideTitle:$('#permissionGuideTitle'), permissionGuideText:$('#permissionGuideText'), permissionGuideSteps:$('#permissionGuideSteps'), permissionGuideRequestBtn:$('#permissionGuideRequestBtn'),
+  startupLayer:$('#startupLayer'), startupGrantBtn:$('#startupGrantBtn'), startupLimitedBtn:$('#startupLimitedBtn'), startupMicState:$('#startupMicState'), startupNotifState:$('#startupNotifState'), startupStorageState:$('#startupStorageState'),
+  tutorialLayer:$('#tutorialLayer'), tutorialCard:$('#tutorialCard'), tutorialCount:$('#tutorialCount'), tutorialTitle:$('#tutorialTitle'), tutorialText:$('#tutorialText'), tutorialNextBtn:$('#tutorialNextBtn'), tutorialSkipStep:$('#tutorialSkipStep'), tutorialSkipAll:$('#tutorialSkipAll'),
   toastStack: $('#toastStack'),
   dropOverlay: $('#dropOverlay'),
 };
@@ -117,7 +129,10 @@ const effectControls = [
   ['reverb', els.reverbRange],
   ['echo', els.echoRange],
   ['pan', els.panRange],
+  ['treble', $('#trebleRange')], ['lowpass',$('#lowpassRange')], ['drive',$('#driveRange')], ['compression',$('#compressionRange')], ['pitch',$('#pitchRange')],
 ];
+els.trebleRange=$('#trebleRange'); els.lowpassRange=$('#lowpassRange'); els.driveRange=$('#driveRange'); els.compressionRange=$('#compressionRange'); els.pitchRange=$('#pitchRange');
+els.trebleOut=$('#trebleOut'); els.lowpassOut=$('#lowpassOut'); els.driveOut=$('#driveOut'); els.compressionOut=$('#compressionOut'); els.pitchOut=$('#pitchOut');
 
 function openDb() {
   return new Promise((resolve, reject) => {

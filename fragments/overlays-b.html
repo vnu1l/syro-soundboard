@@ -1,0 +1,26 @@
+<div class="library-scrim" id="libraryScrim"></div>
+<aside aria-label="Sound and effects library" class="library-drawer glass-panel" id="libraryDrawer">
+<div class="library-head"><div><p class="eyebrow">BUILT-IN LIBRARY</p><h2>Sound &amp; FX Library</h2></div><button class="icon-btn" id="libraryCloseBtn" type="button"><svg><use href="#i-x"></use></svg></button></div>
+<div class="search-box library-search"><svg><use href="#i-search"></use></svg><input autocomplete="off" id="librarySearchInput" placeholder="Search library..." type="search"/></div>
+<div class="library-tabs"><button class="library-tab is-active" data-library-tab="sounds">Sounds</button><button class="library-tab" data-library-tab="effects">Effect presets</button></div>
+<div class="library-categories" id="libraryCategories"></div>
+<div class="library-grid" id="libraryGrid"></div>
+</aside>
+<div class="startup-layer" hidden="" id="startupLayer">
+<section class="startup-card">
+<div class="startup-brand"><div class="brand__mark"><span></span><span></span><span></span></div><div><strong>SYRO</strong><small>SOUNDBOARD SETUP</small></div></div>
+<p class="eyebrow">ONE-TIME SETUP</p><h1>Ready your audio workspace.</h1>
+<p class="startup-lead">Syro checks the permissions used by recording, background notifications and persistent local storage. You stay in control, and audio remains local unless you export it.</p>
+<div class="permission-grid">
+<article class="permission-card"><div class="permission-card__top"><strong>Microphone</strong><span class="permission-state" id="startupMicState">Check</span></div><p>Record pads and microphone tracks in Timeline.</p></article>
+<article class="permission-card"><div class="permission-card__top"><strong>Notifications</strong><span class="permission-state" id="startupNotifState">Check</span></div><p>Show alerts while the tab is in the background.</p></article>
+<article class="permission-card"><div class="permission-card__top"><strong>Local storage</strong><span class="permission-state" id="startupStorageState">Check</span></div><p>Ask the browser to keep your local board data persistently.</p></article>
+</div>
+<div class="startup-actions"><span class="startup-note">System/tab audio is requested only when you enable it for Live Timeline, because browsers require a fresh picker each capture session.</span><div class="startup-action-group"><button class="ui-btn" id="startupLimitedBtn">Continue limited</button><button class="ui-btn ui-btn--primary" id="startupGrantBtn"><svg><use href="#i-lock"></use></svg><span>Grant permissions</span></button></div></div>
+</section>
+</div>
+<div class="tutorial-layer" hidden="" id="tutorialLayer">
+<section class="tutorial-card" id="tutorialCard"><span class="tutorial-count" id="tutorialCount">1 / 5</span><h3 id="tutorialTitle">Your sound board</h3><p id="tutorialText"></p><div class="tutorial-actions"><button class="tutorial-skip" id="tutorialSkipAll">Skip tutorial</button><div><button class="ui-btn" id="tutorialSkipStep">Skip step</button><button class="ui-btn ui-btn--primary" id="tutorialNextBtn">Next</button></div></div></section>
+</div>
+<div aria-live="polite" class="toast-stack" id="toastStack"></div>
+<div class="drop-overlay" id="dropOverlay"><div><svg><use href="#i-wave"></use></svg><strong>Drop audio to add</strong><small>MP3, WAV, OGG, M4A and more</small></div></div>

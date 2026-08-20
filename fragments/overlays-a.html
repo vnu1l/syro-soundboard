@@ -1,0 +1,53 @@
+<input accept="audio/*" hidden="" id="audioFileInput" multiple="" type="file"/>
+<input accept="audio/*" hidden="" id="timelineFileInput" multiple="" type="file"/>
+<div class="context-menu" hidden="" id="contextMenu" role="menu">
+<button data-action="play"><svg><use href="#i-play"></use></svg><span>Play</span><kbd>Space</kbd></button>
+<button data-action="stop"><svg><use href="#i-stop"></use></svg><span>Stop</span></button>
+<span class="context-separator"></span>
+<button data-action="copy"><svg><use href="#i-copy"></use></svg><span>Copy</span><kbd>Ctrl C</kbd></button>
+<button data-action="duplicate"><svg><use href="#i-plus"></use></svg><span>Duplicate</span><kbd>Ctrl D</kbd></button>
+<button data-action="rename"><svg><use href="#i-wave"></use></svg><span>Rename</span><kbd>F2</kbd></button>
+<span class="context-separator"></span>
+<button class="danger" data-action="delete"><svg><use href="#i-trash"></use></svg><span>Delete</span><kbd>Del</kbd></button>
+</div>
+<div class="modal-layer" hidden="" id="modalLayer">
+<div class="modal-backdrop"></div>
+<section aria-modal="true" class="modal glass-panel" hidden="" id="recordModal" role="dialog">
+<div class="modal-head"><div><p class="eyebrow">NEW SOUND</p><h2>Record audio</h2></div><button class="icon-btn" data-close-modal=""><svg><use href="#i-x"></use></svg></button></div>
+<div class="recorder-visual">
+<div class="recorder-orb" id="recorderOrb"><span></span></div>
+<div class="meter"><i id="recordMeter"></i></div>
+<strong id="recordTimer">00:00.0</strong>
+<small id="recordStatus">Ready to record</small>
+</div>
+<div class="modal-actions">
+<button class="ui-btn" data-close-modal="">Cancel</button>
+<button class="ui-btn ui-btn--primary" id="recordToggleBtn"><span class="record-dot"></span><span>Start recording</span></button>
+</div>
+</section>
+<section aria-modal="true" class="modal glass-panel settings-modal-v2" hidden="" id="settingsModal" role="dialog">
+<div class="settings-shell">
+<aside class="settings-sidebar">
+<div class="modal-head"><div><p class="eyebrow">PREFERENCES</p><h2>Settings</h2></div><button class="icon-btn" data-close-modal=""><svg><use href="#i-x"></use></svg></button></div>
+<nav class="settings-tabs" id="settingsTabs">
+<button class="setting-tab is-active" data-settings-page="general">General</button>
+<button class="setting-tab" data-settings-page="audio">Audio</button>
+<button class="setting-tab" data-settings-page="interface">Interface</button>
+<button class="setting-tab" data-settings-page="notifications">Notifications</button>
+<button class="setting-tab" data-settings-page="permissions">Permissions</button>
+<button class="setting-tab" data-settings-page="storage">Storage</button>
+</nav>
+</aside>
+<div class="settings-content" id="settingsContent"></div>
+</div>
+</section>
+<section aria-modal="true" class="modal glass-panel permission-guide" hidden="" id="permissionGuideModal" role="dialog">
+<div class="modal-head"><div><p class="eyebrow">PERMISSION NEEDED</p><h2 id="permissionGuideTitle">Permission required</h2></div><button class="icon-btn" data-close-modal=""><svg><use href="#i-x"></use></svg></button></div>
+<p class="startup-lead" id="permissionGuideText"></p>
+<div class="guide-steps" id="permissionGuideSteps"></div>
+<div class="modal-actions">
+<button class="ui-btn" data-close-modal="">Not now</button>
+<button class="ui-btn ui-btn--primary permission-action" id="permissionGuideRequestBtn">Request permission</button>
+</div>
+</section>
+</div>

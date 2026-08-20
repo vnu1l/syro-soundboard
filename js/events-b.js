@@ -48,11 +48,11 @@ els.shortcutCapture.addEventListener('click', () => {
 });
 
 els.addEffectBtn.addEventListener('click', () => toast('More effect modules will plug into this chain here'));
-els.exportBtn.addEventListener('click', exportBackup);
+els.exportBtn?.addEventListener('click', exportBackup);
 
-els.motionToggle.addEventListener('change', () => { settings.motion = els.motionToggle.checked; applySettingsToUi(); saveState(); });
-els.uiSoundsToggle.addEventListener('change', () => { settings.uiSounds = els.uiSoundsToggle.checked; saveState(); uiTick(720, .015); });
-els.autosaveToggle.addEventListener('change', () => { settings.autosave = els.autosaveToggle.checked; saveState(); });
+els.motionToggle?.addEventListener('change', () => { settings.motion = els.motionToggle.checked; applySettingsToUi(); saveState(); });
+els.uiSoundsToggle?.addEventListener('change', () => { settings.uiSounds = els.uiSoundsToggle.checked; saveState(); uiTick(720, .015); });
+els.autosaveToggle?.addEventListener('change', () => { settings.autosave = els.autosaveToggle.checked; saveState(); });
 
 for (const input of $$('input[type="range"]')) paintRange(input);
 
@@ -152,3 +152,4 @@ if ('serviceWorker' in navigator) {
 loadState();
 renderAll();
 bindGlobalPointerGlow();
+if(typeof ensureV2State==='function')ensureV2State();

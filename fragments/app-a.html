@@ -1,0 +1,83 @@
+<header class="top-dock glass-panel float-a">
+<div class="brand" title="Syro Soundboard">
+<div class="brand__mark"><span></span><span></span><span></span></div>
+<div class="brand__text">
+<strong>SYRO</strong>
+<small>SOUNDBOARD</small>
+</div>
+</div>
+<div class="top-actions">
+<button class="ui-btn ui-btn--primary magnetic" id="addSoundBtn" type="button">
+<svg><use href="#i-plus"></use></svg><span>Add sound</span>
+</button>
+<button class="ui-btn magnetic" id="recordBtn" type="button">
+<svg><use href="#i-mic"></use></svg><span>Record</span>
+</button>
+<span aria-hidden="true" class="dock-divider"></span>
+<button class="ui-btn timeline-launch magnetic" id="timelineToggleBtn" title="Open Timeline" type="button">
+<svg><use href="#i-timeline"></use></svg><span>Timeline</span>
+</button>
+<span aria-hidden="true" class="dock-divider"></span>
+<button class="icon-btn magnetic" disabled="" id="undoBtn" title="Undo (Ctrl+Z)" type="button"><svg><use href="#i-undo"></use></svg></button>
+<button class="icon-btn magnetic" disabled="" id="redoBtn" title="Redo (Ctrl+Shift+Z)" type="button"><svg><use href="#i-redo"></use></svg></button>
+<button class="icon-btn magnetic" id="saveBtn" title="Save now" type="button"><svg><use href="#i-save"></use></svg></button>
+</div>
+<div class="search-box">
+<svg><use href="#i-search"></use></svg>
+<input aria-label="Search sounds" autocomplete="off" id="searchInput" placeholder="Search sounds..." spellcheck="false" type="search"/>
+<kbd>Ctrl K</kbd>
+</div>
+<button class="icon-btn magnetic" id="settingsBtn" title="Settings" type="button"><svg><use href="#i-settings"></use></svg></button>
+</header>
+<section aria-label="Timeline editor" class="timeline-panel glass-panel" hidden="" id="timelinePanel">
+<div class="timeline-head">
+<div class="timeline-title"><svg><use href="#i-timeline"></use></svg><div><strong id="timelineName">Timeline 1</strong><small id="timelineMeta">0 clips · 0:00</small></div></div>
+<div class="timeline-nav">
+<button class="mini-btn" id="timelinePrevBtn" title="Previous timeline" type="button"><svg><use href="#i-undo"></use></svg></button>
+<button class="mini-btn" id="timelineNextBtn" title="Next timeline" type="button"><svg><use href="#i-redo"></use></svg></button>
+<button class="mini-btn" id="timelineNewBtn" title="New timeline" type="button"><svg><use href="#i-plus"></use></svg></button>
+<button class="mini-btn" id="timelinePlayBtn" title="Play timeline" type="button"><svg><use href="#i-play"></use></svg></button>
+<button class="mini-btn" id="timelineStopBtn" title="Stop timeline" type="button"><svg><use href="#i-stop"></use></svg></button>
+</div>
+<span class="timeline-spacer"></span>
+<div class="timeline-source-pills" title="Sources visible in this timeline">
+<button class="source-pill is-on" data-source-filter="board">Board</button>
+<button class="source-pill is-on" data-source-filter="mic">Mic</button>
+<button class="source-pill is-on" data-source-filter="system">System</button>
+</div>
+<div class="timeline-tools">
+<button class="mini-btn" id="timelineAddBtn" title="Add audio file" type="button"><svg><use href="#i-plus"></use></svg></button>
+<button class="mini-btn" id="timelineRecordBtn" title="Record into timeline" type="button"><svg><use href="#i-mic"></use></svg></button>
+<button class="timeline-live" id="timelineLiveBtn" type="button"><i></i><span>Live</span></button>
+<button class="mini-btn timeline-stop-live" hidden="" id="timelineStopLiveBtn" title="Stop live capture" type="button"><svg><use href="#i-stop"></use></svg></button>
+<label class="timeline-zoom"><svg><use href="#i-zoom"></use></svg><input class="custom-range" id="timelineZoomRange" max="400" min="50" step="10" type="range" value="100"/></label>
+</div>
+</div>
+<div class="timeline-viewport" id="timelineViewport">
+<div class="timeline-canvas" id="timelineCanvas">
+<div class="timeline-ruler" id="timelineRuler"></div>
+<div class="timeline-track" data-label="BOARD" data-source="board"></div>
+<div class="timeline-track" data-label="MIC" data-source="mic"></div>
+<div class="timeline-track" data-label="SYSTEM" data-source="system"></div>
+<div class="timeline-playhead" id="timelinePlayhead" style="left:70px"></div>
+<div class="timeline-drop-hint" id="timelineDropHint">Drop sounds or files here · middle mouse to pan · Ctrl/⌘ click to multi-select</div>
+</div>
+</div>
+</section>
+<aside aria-label="Groups" class="groups-panel glass-panel float-b">
+<div class="panel-heading">
+<span>Groups</span>
+<button class="mini-btn" id="newGroupBtn" title="New group"><svg><use href="#i-plus"></use></svg></button>
+</div>
+<nav class="groups-list" id="groupsList">
+<button class="group-item is-active" data-group="all"><svg><use href="#i-grid"></use></svg><span>All sounds</span><em id="allCount">0</em></button>
+<button class="group-item" data-group="favorites"><span class="dot dot--purple"></span><span>Favorites</span><em>0</em></button>
+<button class="group-item" data-group="effects"><span class="dot dot--blue"></span><span>Effects</span><em>0</em></button>
+<button class="group-item" data-group="voice"><span class="dot dot--pink"></span><span>Voice</span><em>0</em></button>
+</nav>
+<button class="library-launch magnetic" id="libraryBtn" type="button"><svg><use href="#i-library"></use></svg><span>Sound &amp; FX Library</span></button>
+<div class="panel-tip">
+<span class="panel-tip__pulse"></span>
+<p>Drop audio files anywhere to add them instantly.</p>
+</div>
+</aside>

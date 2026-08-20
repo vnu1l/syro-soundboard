@@ -17,8 +17,9 @@ function audioContext() {
     const Ctx = window.AudioContext || window.webkitAudioContext;
     runtime.audioContext = new Ctx({ latencyHint: 'interactive' });
     runtime.masterGain = runtime.audioContext.createGain();
-    runtime.masterGain.gain.value = state.masterVolume / 100;
-    runtime.masterGain.connect(runtime.audioContext.destination);
+    runtime.masterGain.gain.value=state.masterVolume/100;
+    runtime.captureDestination=runtime.audioContext.createMediaStreamDestination();
+    runtime.masterGain.connect(runtime.audioContext.destination); runtime.masterGain.connect(runtime.captureDestination);
     runtime.reverbImpulse = createImpulseResponse(runtime.audioContext, 2.2, 2.4);
   }
   if (runtime.audioContext.state === 'suspended') runtime.audioContext.resume();
@@ -72,19 +73,35 @@ async function getBuffer(pad) {
   return buffer;
 }
 
+function makeDriveCurve(amount = 0) {
+  const samples = 256; const curve = new Float32Array(samples); const k = Math.max(0, amount) * 3;
+  if (!k) { for (let i=0;i<samples;i++) curve[i]=(i*2/(samples-1))-1; return curve; }
+  for (let i=0;i<samples;i++) { const x=(i*2/(samples-1))-1; curve[i]=((1+k)*x)/(1+k*Math.abs(x)); }
+  return curve;
+}
+function applyCompression(node, amount = 0) {
+  const a=clamp(amount/100,0,1); node.threshold.value=-8-(a*34); node.knee.value=8+(a*22); node.ratio.value=1+(a*11); node.attack.value=.006; node.release.value=.18+(a*.2);
+}
+
 function buildVoice(buffer, pad) {
   const ctx = audioContext();
   const source = ctx.createBufferSource();
   source.buffer = buffer;
   source.loop = pad.playbackMode === 'loop';
 
-  const bass = ctx.createBiquadFilter();
-  bass.type = 'lowshelf';
-  bass.frequency.value = 180;
-  bass.gain.value = pad.effects.bass;
+  source.playbackRate.value = Math.pow(2, (pad.effects.pitch || 0) / 12);
 
-  const gain = ctx.createGain();
-  gain.gain.value = pad.effects.volume / 100;
+  const bass = ctx.createBiquadFilter();
+  bass.type = 'lowshelf'; bass.frequency.value = 180; bass.gain.value = pad.effects.bass || 0;
+  const treble = ctx.createBiquadFilter();
+  treble.type = 'highshelf'; treble.frequency.value = 3200; treble.gain.value = pad.effects.treble || 0;
+  const lowpass = ctx.createBiquadFilter();
+  lowpass.type = 'lowpass'; lowpass.frequency.value = pad.effects.lowpass || 20000; lowpass.Q.value = .25;
+  const drive = ctx.createWaveShaper(); drive.oversample = '2x'; drive.curve = makeDriveCurve(pad.effects.drive || 0);
+  const compressor = ctx.createDynamicsCompressor();
+  applyCompression(compressor, pad.effects.compression || 0);
+
+  const gain = ctx.createGain(); gain.gain.value = pad.effects.volume / 100;
 
   const pan = ctx.createStereoPanner();
   pan.pan.value = pad.effects.pan / 100;
@@ -104,8 +121,7 @@ function buildVoice(buffer, pad) {
   const feedback = ctx.createGain();
   feedback.gain.value = Math.min(.55, (pad.effects.echo / 100) * .52);
 
-  source.connect(bass);
-  bass.connect(gain);
+  source.connect(bass); bass.connect(treble); treble.connect(lowpass); lowpass.connect(drive); drive.connect(compressor); compressor.connect(gain);
   gain.connect(dry);
   dry.connect(pan);
 
@@ -120,7 +136,7 @@ function buildVoice(buffer, pad) {
   feedback.connect(delay);
 
   pan.connect(runtime.masterGain);
-  return { source, nodes: { bass, gain, pan, reverbGain, echoGain, feedback } };
+  return { source, nodes:{bass,treble,lowpass,drive,compressor,gain,pan,reverbGain,echoGain,feedback} };
 }
 
 function isPadPlaying(id) {
@@ -138,14 +154,19 @@ async function playPad(id) {
   try {
     const buffer = await getBuffer(pad);
     const voice = buildVoice(buffer, pad);
-    const startedAt = audioContext().currentTime;
-    const activeEntry = { source: voice.source, nodes: voice.nodes, startedAt, duration: buffer.duration, raf: 0 };
+    const ctx = audioContext();
+    const startOffset = clamp(Number(pad.startOffset)||0, 0, Math.max(0, buffer.duration-.01));
+    const rawEnd = pad.endOffset == null ? buffer.duration : clamp(Number(pad.endOffset), startOffset+.01, buffer.duration);
+    const playDuration = Math.max(.01, rawEnd-startOffset);
+    if (pad.playbackMode === 'loop') { voice.source.loopStart=startOffset; voice.source.loopEnd=rawEnd; }
+    const startedAt = ctx.currentTime;
+    const activeEntry = { source:voice.source,nodes:voice.nodes,startedAt,duration:playDuration/voice.source.playbackRate.value,raf:0 };
     const list = runtime.active.get(id) || [];
-    list.push(activeEntry);
-    runtime.active.set(id, list);
+    while (list.length >= Math.max(1, Number(settings.maxPolyphony)||8)) { const old=list.shift(); try{old.source.stop()}catch(_){} cancelAnimationFrame(old.raf); }
+    list.push(activeEntry); runtime.active.set(id,list);
 
-    voice.source.onended = () => removeActiveEntry(id, activeEntry);
-    voice.source.start(0);
+    voice.source.onended=()=>removeActiveEntry(id,activeEntry);
+    if (pad.playbackMode === 'loop') voice.source.start(0,startOffset); else voice.source.start(0,startOffset,playDuration);
     updatePlayingUi();
     animatePadProgress(id, activeEntry, pad.playbackMode === 'loop');
     uiTick(380, .018);
@@ -188,7 +209,11 @@ function updateLiveNodes(pad) {
   const list = runtime.active.get(pad.id) || [];
   list.forEach(entry => {
     const now = audioContext().currentTime;
-    entry.nodes.bass.gain.setTargetAtTime(pad.effects.bass, now, .015);
+    entry.nodes.bass.gain.setTargetAtTime(pad.effects.bass||0,now,.015);
+    entry.nodes.treble.gain.setTargetAtTime(pad.effects.treble||0,now,.015);
+    entry.nodes.lowpass.frequency.setTargetAtTime(pad.effects.lowpass||20000,now,.02);
+    entry.nodes.drive.curve=makeDriveCurve(pad.effects.drive||0); applyCompression(entry.nodes.compressor,pad.effects.compression||0);
+    entry.source.playbackRate.setTargetAtTime(Math.pow(2,(pad.effects.pitch||0)/12),now,.02);
     entry.nodes.gain.gain.setTargetAtTime(pad.effects.volume / 100, now, .015);
     entry.nodes.pan.pan.setTargetAtTime(pad.effects.pan / 100, now, .015);
     entry.nodes.reverbGain.gain.setTargetAtTime((pad.effects.reverb / 100) * .78, now, .02);

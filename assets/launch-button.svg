@@ -1,0 +1,14 @@
+<svg width="620" height="128" viewBox="0 0 620 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="620" y2="128" gradientUnits="userSpaceOnUse"><stop stop-color="#121017"/><stop offset=".52" stop-color="#171120"/><stop offset="1" stop-color="#0B0910"/></linearGradient>
+  <linearGradient id="line" x1="20" y1="0" x2="590" y2="135" gradientUnits="userSpaceOnUse"><stop stop-color="#4D3565"/><stop offset=".48" stop-color="#A667FF"/><stop offset="1" stop-color="#493259"/></linearGradient>
+  <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(471 29) rotate(153) scale(212 130)" gradientUnits="userSpaceOnUse"><stop stop-color="#9B65FF" stop-opacity=".22"/><stop offset="1" stop-color="#9B65FF" stop-opacity="0"/></radialGradient>
+  <filter id="shadow" x="-30" y="-30" width="680" height="188"><feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#000" flood-opacity=".42"/></filter>
+</defs>
+<g filter="url(#shadow)"><rect x="5" y="5" width="610" height="118" rx="28" fill="url(#bg)"/><rect x="5.75" y="5.75" width="608.5" height="116.5" rx="27.25" stroke="url(#line)" stroke-opacity=".9" stroke-width="1.5"/><rect x="6" y="6" width="608" height="116" rx="27" fill="url(#glow)"/></g>
+<rect x="31" y="30" width="68" height="68" rx="20" fill="#9B65FF" fill-opacity=".08" stroke="#9B65FF" stroke-opacity=".28"/>
+<path d="M55 50V78L78 64L55 50Z" fill="#C9A5FF"/><circle cx="78" cy="64" r="4" fill="#9B65FF"/>
+<text x="124" y="59" fill="#F3EEF8" font-family="Segoe UI,Arial,sans-serif" font-weight="700" font-size="24" letter-spacing="2">OPEN SYRO SOUNDBOARD</text>
+<text x="124" y="84" fill="#817889" font-family="Segoe UI,Arial,sans-serif" font-size="14">Launch the live GitHub Pages build</text>
+<path d="M565 52L577 64L565 76" stroke="#B986FF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

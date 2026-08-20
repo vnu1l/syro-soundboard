@@ -44,7 +44,8 @@ async function startRecording() {
     runtime.recordTimerId = setInterval(updateRecordTimer, 80);
   } catch (error) {
     console.error(error);
-    toast('Microphone permission was not granted');
+    toast('Microphone permission was not granted','warn');
+    if (typeof showPermissionGuide === 'function') showPermissionGuide('microphone', () => openModal(els.recordModal));
   }
 }
 
@@ -114,12 +115,13 @@ async function addRecordedBlob(blob) {
 }
 
 async function exportBackup() {
-  const buttonText = els.exportBtn.textContent;
-  els.exportBtn.textContent = 'Preparing…';
-  els.exportBtn.disabled = true;
+  const button=els.exportBtn||document.querySelector('#settingsExportBtn');
+  const buttonText=button?.textContent||'Export backup';
+  if(button){button.textContent='Preparing…';button.disabled=true;}
   try {
     const audio = {};
-    const uniqueKeys = [...new Set(state.pads.map(p => p.audioKey).filter(Boolean))];
+    const timelineKeys=(state.timelines||[]).flatMap(t=>(t.clips||[]).map(c=>c.audioKey));
+    const uniqueKeys=[...new Set([...state.pads.map(p=>p.audioKey),...timelineKeys].filter(Boolean))];
     for (const key of uniqueKeys) {
       const blob = await idbGet(key);
       if (!blob) continue;
@@ -139,8 +141,7 @@ async function exportBackup() {
     console.error(error);
     toast('Backup export failed');
   } finally {
-    els.exportBtn.textContent = buttonText;
-    els.exportBtn.disabled = false;
+    if(button){button.textContent=buttonText;button.disabled=false;}
   }
 }
 
@@ -158,9 +159,9 @@ function slugify(value) {
 }
 
 function applySettingsToUi() {
-  els.motionToggle.checked = settings.motion;
-  els.uiSoundsToggle.checked = settings.uiSounds;
-  els.autosaveToggle.checked = settings.autosave;
+  if (els.motionToggle) els.motionToggle.checked = settings.motion;
+  if (els.uiSoundsToggle) els.uiSoundsToggle.checked = settings.uiSounds;
+  if (els.autosaveToggle) els.autosaveToggle.checked = settings.autosave;
   document.body.classList.toggle('reduce-motion', !settings.motion);
 }
 

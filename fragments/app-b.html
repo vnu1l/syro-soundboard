@@ -1,0 +1,117 @@
+<section aria-label="Sound pads workspace" class="workspace">
+<div class="workspace-head">
+<div>
+<p class="eyebrow">CURRENT BOARD</p>
+<div class="board-title-row">
+<h1 contenteditable="true" id="boardTitle" spellcheck="false">My Soundboard</h1>
+<span class="save-state" id="saveState"><i></i> Saved locally</span>
+</div>
+</div>
+<div class="workspace-tools">
+<span class="context-chip" hidden="" id="selectionContextChip"><i></i><span>Selected sound tools active</span></span>
+<label class="compact-select" title="Pad size">
+<svg><use href="#i-grid"></use></svg>
+<select aria-label="Pad size" id="padSizeSelect">
+<option value="compact">Compact</option>
+<option selected="" value="normal">Normal</option>
+<option value="large">Large</option>
+</select>
+<svg class="select-chevron"><use href="#i-chev"></use></svg>
+</label>
+<button class="icon-btn magnetic" id="boardMenuBtn" title="Board options"><svg><use href="#i-more"></use></svg></button>
+</div>
+</div>
+<div class="pads-grid" data-size="normal" id="padsGrid"></div>
+<button class="empty-add" id="emptyAddBtn" type="button">
+<span class="empty-add__icon"><svg><use href="#i-plus"></use></svg></span>
+<span><strong>Add your first sound</strong><small>Upload audio, drag a file, or record your voice</small></span>
+</button>
+</section>
+<aside aria-label="Effects" class="effects-panel glass-panel float-c" id="effectsPanel">
+<div class="effects-head">
+<div>
+<p class="eyebrow">LIVE EDITOR</p>
+<h2>Effects</h2>
+</div>
+<button class="mini-btn" id="effectsResetBtn" title="Reset effects"><span>Reset</span></button>
+</div>
+<div class="selected-sound" id="selectedSoundSummary">
+<div class="selected-sound__icon"><svg><use href="#i-wave"></use></svg></div>
+<div><strong>No sound selected</strong><small>Select a pad to edit it</small></div>
+</div>
+<div class="effect-chain" id="effectChain">
+<div class="effect-block" data-effect="volume">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Volume</span><output id="volumeOut">100%</output></div>
+<input class="custom-range" disabled="" id="volumeRange" max="160" min="0" step="1" type="range" value="100">
+</input></div>
+<div class="effect-block" data-effect="bass">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Bass boost</span><output id="bassOut">0 dB</output></div>
+<input class="custom-range" disabled="" id="bassRange" max="18" min="-12" step="1" type="range" value="0"/>
+</div>
+<div class="effect-block" data-effect="reverb">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Reverb</span><output id="reverbOut">0%</output></div>
+<input class="custom-range" disabled="" id="reverbRange" max="100" min="0" step="1" type="range" value="0"/>
+</div>
+<div class="effect-block" data-effect="echo">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Echo</span><output id="echoOut">0%</output></div>
+<input class="custom-range" disabled="" id="echoRange" max="80" min="0" step="1" type="range" value="0"/>
+</div>
+<div class="effect-block" data-effect="pan">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Stereo pan</span><output id="panOut">Center</output></div>
+<input class="custom-range" disabled="" id="panRange" max="100" min="-100" step="1" type="range" value="0"/>
+</div>
+<div class="effect-block" data-effect="treble">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Treble</span><output id="trebleOut">0 dB</output></div>
+<input class="custom-range" disabled="" id="trebleRange" max="18" min="-12" step="1" type="range" value="0"/>
+</div>
+<div class="effect-block" data-effect="lowpass">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Low-pass</span><output id="lowpassOut">20 kHz</output></div>
+<input class="custom-range" disabled="" id="lowpassRange" max="20000" min="600" step="100" type="range" value="20000"/>
+</div>
+<div class="effect-block" data-effect="drive">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Drive</span><output id="driveOut">0%</output></div>
+<input class="custom-range" disabled="" id="driveRange" max="100" min="0" step="1" type="range" value="0"/>
+</div>
+<div class="effect-block" data-effect="compression">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Compression</span><output id="compressionOut">0%</output></div>
+<input class="custom-range" disabled="" id="compressionRange" max="100" min="0" step="1" type="range" value="0"/>
+</div>
+<div class="effect-block" data-effect="pitch">
+<div class="effect-block__head"><span><i class="fx-dot"></i>Pitch</span><output id="pitchOut">0 st</output></div>
+<input class="custom-range" disabled="" id="pitchRange" max="12" min="-12" step="1" type="range" value="0"/>
+</div>
+</div>
+<div class="playback-card">
+<div class="effect-block__head"><span>Playback mode</span></div>
+<label class="full-select">
+<select disabled="" id="playbackModeSelect">
+<option value="restart">Restart</option>
+<option value="overlap">Overlap / Stack</option>
+<option value="toggle">Toggle</option>
+<option value="loop">Loop</option>
+<option value="oneshot">One shot</option>
+</select>
+<svg><use href="#i-chev"></use></svg>
+</label>
+<div class="shortcut-row">
+<span>Shortcut</span>
+<button class="key-capture" disabled="" id="shortcutCapture">None</button>
+</div>
+</div>
+<button class="add-effect-btn" disabled="" id="addEffectBtn"><svg><use href="#i-spark"></use></svg><span>Add effect</span></button>
+</aside>
+<footer class="transport glass-panel float-d">
+<div class="transport__left">
+<button class="transport-stop magnetic" id="stopAllBtn" type="button"><svg><use href="#i-stop"></use></svg><span>Stop all</span></button>
+<span class="transport-divider"></span>
+<div class="now-playing">
+<span class="now-playing__wave"><i></i><i></i><i></i><i></i></span>
+<div><small>NOW PLAYING</small><strong id="nowPlayingText">Nothing playing</strong></div>
+</div>
+</div>
+<div class="master-volume">
+<svg><use href="#i-volume"></use></svg>
+<input class="custom-range custom-range--master" id="masterVolumeRange" max="120" min="0" type="range" value="100"/>
+<output id="masterVolumeOut">100%</output>
+</div>
+</footer>
