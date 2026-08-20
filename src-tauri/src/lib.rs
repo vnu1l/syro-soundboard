@@ -59,8 +59,9 @@ fn native_capture_stop(manager: State<CaptureManager>, id: String) -> Result<Cap
 #[tauri::command]
 fn native_read_file(app: AppHandle, path: String) -> Result<Vec<u8>, String> {
     let root = app.path().app_data_dir().map_err(|e| e.to_string())?;
+    std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
     let requested = PathBuf::from(path);
-    let canon_root = std::fs::canonicalize(root).map_err(|e| e.to_string())?;
+    let canon_root = std::fs::canonicalize(&root).map_err(|e| e.to_string())?;
     let canon = std::fs::canonicalize(&requested).map_err(|e| e.to_string())?;
     if !canon.starts_with(canon_root) { return Err("Path is outside Syro application data".into()); }
     std::fs::read(canon).map_err(|e| e.to_string())
@@ -121,13 +122,18 @@ pub fn run() {
             let open = MenuItem::with_id(app, "open", "Open Syro", true, None::<&str>)?;
             let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&open, &quit])?;
-            let icon = app.default_window_icon().cloned().ok_or("Missing app icon")?;
+            let icon = app.default_window_icon().cloned().ok_or_else(|| std::io::Error::new(std::io::ErrorKind::NotFound, "Missing app icon"))?;
             TrayIconBuilder::new().icon(icon).tooltip("Syro Soundboard").menu(&menu)
                 .on_menu_event(|app, event| match event.id().as_ref() {
                     "open" => show_main(app),
                     "quit" => app.exit(0),
                     _ => {}
                 }).build(app)?;
+            if std::env::args().any(|arg| arg == "--background") {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.hide();
+                }
+            }
             Ok(())
         })
         .on_window_event(|window, event| {

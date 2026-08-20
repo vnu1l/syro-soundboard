@@ -136,7 +136,7 @@ fn capture_loop(path: PathBuf, mode_name: String, process_id: Option<u32>, stop:
     use std::collections::VecDeque;
     use wasapi::{AudioClient, DeviceEnumerator, Direction, SampleType, StreamMode, WaveFormat, initialize_mta};
 
-    initialize_mta().map_err(|e| e.to_string())?;
+    initialize_mta().ok().map_err(|e| e.to_string())?;
     let desired = WaveFormat::new(32, 32, &SampleType::Float, 48_000, 2, None);
     let mut audio_client = if mode_name == "process" {
         let pid = process_id.ok_or_else(|| "A process id is required".to_string())?;
