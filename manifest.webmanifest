@@ -1,0 +1,9 @@
+{
+  "name": "Syro Soundboard",
+  "short_name": "Syro",
+  "description": "Local-first soundboard with live audio effects, shortcuts and recording.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#070609",
+  "theme_color": "#08070b"
+}
