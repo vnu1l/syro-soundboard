@@ -1,0 +1,32 @@
+// Timeline buttons.
+els.timelinePrevBtn.addEventListener('click',()=>navigateTimeline(-1)); els.timelineNextBtn.addEventListener('click',()=>navigateTimeline(1)); els.timelineNewBtn.addEventListener('click',addTimeline);
+els.timelinePlayBtn.addEventListener('click',playTimeline);els.timelineStopBtn.addEventListener('click',()=>stopTimelinePlayback());
+els.timelineAddBtn.addEventListener('click',()=>els.timelineFileInput.click());els.timelineFileInput.addEventListener('change',async()=>{await addTimelineFiles(els.timelineFileInput.files,currentTimeline().playhead||0);els.timelineFileInput.value=''});
+els.timelineRecordBtn.addEventListener('click',()=>{runtime.recordTarget='timeline';els.recordStatus.textContent='Recording will be added to Timeline';openModal(els.recordModal)});
+els.timelineLiveBtn.addEventListener('click',startLiveSession);els.timelineStopLiveBtn.addEventListener('click',stopLiveSession);
+els.timelineZoomRange.addEventListener('input',()=>{currentTimeline().zoom=Number(els.timelineZoomRange.value)/100;paintRange(els.timelineZoomRange);renderTimeline();markDirty()});
+els.timelineViewport.addEventListener('wheel',e=>{ if(Math.abs(e.deltaY)<.01)return; e.preventDefault(); const tl=currentTimeline(); const oldPps=timelinePps(); const rect=els.timelineViewport.getBoundingClientRect(); const anchorPx=els.timelineViewport.scrollLeft+(e.clientX-rect.left); const anchorTime=Math.max(0,(anchorPx-70)/oldPps); const factor=Math.exp(-e.deltaY*.00135); tl.zoom=clamp((tl.zoom||1)*factor,.5,4); renderTimeline(); const newAnchor=70+anchorTime*timelinePps(); els.timelineViewport.scrollLeft=Math.max(0,newAnchor-(e.clientX-rect.left)); markDirty(); },{passive:false});
+$$('[data-source-filter]').forEach(btn=>btn.addEventListener('click',()=>{const source=btn.dataset.sourceFilter;if(runtime.timelineVisibleSources.has(source))runtime.timelineVisibleSources.delete(source);else runtime.timelineVisibleSources.add(source);btn.classList.toggle('is-on',runtime.timelineVisibleSources.has(source));renderTimeline()}));
+
+// Timeline panning, selection and positioning.
+els.timelineViewport.addEventListener('pointerdown',e=>{runtime.timelineHasFocus=true;if(e.button===1){e.preventDefault();runtime.timelinePanning=true;runtime.timelinePanStartX=e.clientX;runtime.timelinePanStartScroll=els.timelineViewport.scrollLeft;els.timelineViewport.classList.add('is-panning');els.timelineViewport.setPointerCapture?.(e.pointerId)}});
+els.timelineViewport.addEventListener('pointermove',e=>{if(runtime.timelinePanning)els.timelineViewport.scrollLeft=runtime.timelinePanStartScroll-(e.clientX-runtime.timelinePanStartX)});
+function endPan(){runtime.timelinePanning=false;els.timelineViewport.classList.remove('is-panning')}els.timelineViewport.addEventListener('pointerup',endPan);els.timelineViewport.addEventListener('pointercancel',endPan);
+els.timelineCanvas.addEventListener('click',e=>{const clip=e.target.closest('.timeline-clip');if(clip)return selectTimelineClip(clip.dataset.clipId,e);if(e.target.closest('.timeline-ruler')||e.target.closest('.timeline-track')){currentTimeline().playhead=timelinePositionFromClientX(e.clientX);renderTimeline()}});
+els.timelineCanvas.addEventListener('dblclick',e=>{if(e.target.closest('.timeline-clip')){selectTimelineClip(e.target.closest('.timeline-clip').dataset.clipId,e);createPadsFromTimelineSelection()}});
+
+// Drag pads -> timeline; clips -> timeline/board.
+els.padsGrid.addEventListener('dragstart',e=>{const pad=e.target.closest('.sound-pad');if(!pad)return;runtime.timelineHasFocus=false;e.dataTransfer.setData('application/x-syro-pad',pad.dataset.padId);e.dataTransfer.effectAllowed='copyMove'});
+els.timelineCanvas.addEventListener('dragstart',e=>{const clip=e.target.closest('.timeline-clip');if(!clip)return;if(!runtime.timelineSelection.has(clip.dataset.clipId))runtime.timelineSelection=new Set([clip.dataset.clipId]);const selected=[...runtime.timelineSelection];e.dataTransfer.setData('application/x-syro-timeline',JSON.stringify(selected));e.dataTransfer.setData('text/plain',selected.join(','));e.dataTransfer.effectAllowed='copyMove'});
+els.timelineViewport.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('application/x-syro-pad')||e.dataTransfer.types.includes('application/x-syro-timeline')||e.dataTransfer.types.includes('Files')){e.preventDefault();e.dataTransfer.dropEffect='copy'}});
+els.timelineViewport.addEventListener('drop',async e=>{e.preventDefault();e.stopPropagation();const start=timelinePositionFromClientX(e.clientX);const padId=e.dataTransfer.getData('application/x-syro-pad');if(padId){const pad=state.pads.find(p=>p.id===padId);if(pad)addPadToTimeline(pad,start);return}const clipRaw=e.dataTransfer.getData('application/x-syro-timeline');if(clipRaw){const ids=JSON.parse(clipRaw);const clips=currentTimeline().clips.filter(c=>ids.includes(c.id));if(clips.length){const before=snapshot();const anchor=Math.min(...clips.map(c=>c.start));clips.forEach(c=>c.start=Math.max(0,start+(c.start-anchor)));commitHistory(before);renderTimeline()}return}if(e.dataTransfer.files?.length)await addTimelineFiles(e.dataTransfer.files,start)});
+els.padsGrid.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('application/x-syro-timeline')){e.preventDefault();e.dataTransfer.dropEffect='copy'}});
+els.padsGrid.addEventListener('drop',e=>{if(e.dataTransfer.getData('application/x-syro-timeline')){e.preventDefault();e.stopPropagation();createPadsFromTimelineSelection()}});
+
+// Better context selection and timeline delete shortcut.
+els.padsGrid.addEventListener('pointerdown',()=>{runtime.timelineHasFocus=false});
+$('.workspace').addEventListener('pointerdown',e=>{if(!e.target.closest('.sound-pad')&&!e.target.closest('button,input,select,[contenteditable]'))clearPadSelection()});
+document.addEventListener('keydown',e=>{if(runtime.timelineHasFocus&&runtime.timelineSelection.size&&!isTypingTarget(e.target)&&e.key==='Delete'){e.preventDefault();e.stopImmediatePropagation();const before=snapshot();currentTimeline().clips=currentTimeline().clips.filter(c=>!runtime.timelineSelection.has(c.id));runtime.timelineSelection.clear();commitHistory(before);renderTimeline();toast('Timeline clips deleted')}} ,true);
+
+// Initial V2 boot after the V1 state loader has run.
+ensureV2State(); if(settings.autoOpenTimeline)toggleTimeline(true); renderLibrary(); renderSettingsPage('general'); refreshPermissionUi(); showStartupIfNeeded();
