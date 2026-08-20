@@ -118,7 +118,7 @@ const els = {
   exportBtn: $('#exportBtn'),
   settingsTabs:$('#settingsTabs'), settingsContent:$('#settingsContent'), permissionGuideModal:$('#permissionGuideModal'), permissionGuideTitle:$('#permissionGuideTitle'), permissionGuideText:$('#permissionGuideText'), permissionGuideSteps:$('#permissionGuideSteps'), permissionGuideRequestBtn:$('#permissionGuideRequestBtn'),
   startupLayer:$('#startupLayer'), startupGrantBtn:$('#startupGrantBtn'), startupLimitedBtn:$('#startupLimitedBtn'), startupMicState:$('#startupMicState'), startupNotifState:$('#startupNotifState'), startupStorageState:$('#startupStorageState'),
-  tutorialLayer:$('#tutorialLayer'), tutorialCard:$('#tutorialCard'), tutorialCount:$('#tutorialCount'), tutorialTitle:$('#tutorialTitle'), tutorialText:$('#tutorialText'), tutorialNextBtn:$('#tutorialNextBtn'), tutorialSkipStep:$('#tutorialSkipStep'), tutorialSkipAll:$('#tutorialSkipAll'),
+  tutorialLayer:$('#tutorialLayer'), tutorialSpotlight:$('#tutorialSpotlight'), tutorialCard:$('#tutorialCard'), tutorialCount:$('#tutorialCount'), tutorialTitle:$('#tutorialTitle'), tutorialText:$('#tutorialText'), tutorialNextBtn:$('#tutorialNextBtn'), tutorialSkipStep:$('#tutorialSkipStep'), tutorialSkipAll:$('#tutorialSkipAll'),
   toastStack: $('#toastStack'),
   dropOverlay: $('#dropOverlay'),
 };

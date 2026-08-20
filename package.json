@@ -1,0 +1,15 @@
+{
+  "name": "syro-soundboard",
+  "private": true,
+  "version": "0.3.0",
+  "description": "Syro Soundboard desktop audio workspace",
+  "scripts": {
+    "dev:web": "node scripts/dev-ui.mjs",
+    "build:web": "node scripts/build-ui.mjs",
+    "desktop:dev": "tauri dev",
+    "desktop:build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4"
+  }
+}

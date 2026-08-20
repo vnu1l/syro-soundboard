@@ -13,7 +13,7 @@
   }
   const scripts = [
     './js/core-a.js', './js/core-b.js', './js/audio.js', './js/actions-a.js', './js/actions-b.js', './js/events-a.js', './js/events-b.js',
-    './js/v2-core.js', './js/v2-onboarding.js', './js/v2-settings.js', './js/v2-library.js', './js/v2-timeline.js', './js/v2-actions.js', './js/v2-events.js'
+    './js/v2-core.js', './js/v2-onboarding.js', './js/v2-settings.js', './js/v2-library.js', './js/v2-timeline-a.js', './js/v2-timeline-b.js', './js/v2-actions.js', './js/desktop-bridge.js', './js/v2-events-a.js', './js/v2-events-b.js'
   ];
   for (const src of scripts) {
     await new Promise((resolve, reject) => {

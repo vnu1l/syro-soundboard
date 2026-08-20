@@ -1,0 +1,94 @@
+name: Desktop Build
+
+on:
+  push:
+    branches:
+      - feat/desktop-native
+    tags:
+      - 'app-v*'
+    paths-ignore:
+      - 'ci/desktop-build-status.txt'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows NSIS
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: Install frontend tooling
+        run: npm install
+
+      - name: Build Syro Soundboard
+        id: desktop_build
+        shell: pwsh
+        run: |
+          npm run desktop:build 2>&1 | Tee-Object -FilePath desktop-build.log
+          $code = $LASTEXITCODE
+          "exit_code=$code" >> $env:GITHUB_OUTPUT
+          exit 0
+
+      - name: Record build result
+        if: always() && github.ref == 'refs/heads/feat/desktop-native'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ci | Out-Null
+          $code = '${{ steps.desktop_build.outputs.exit_code }}'
+          if ([string]::IsNullOrWhiteSpace($code)) { $code = 'setup-failed' }
+          $tail = if (Test-Path desktop-build.log) { Get-Content desktop-build.log -Tail 350 } else { @('Build log was not created; a setup step failed before compilation.') }
+          @(
+            "commit=${{ github.sha }}",
+            "run_id=${{ github.run_id }}",
+            "exit_code=$code",
+            "timestamp=$(Get-Date -AsUTC -Format o)",
+            "--- log tail ---"
+          ) + $tail | Set-Content -Encoding UTF8 ci/desktop-build-status.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- ci/desktop-build-status.txt
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "ci: record desktop build status [skip ci]"
+            git push
+          }
+
+      - name: Upload Setup artifact
+        if: steps.desktop_build.outputs.exit_code == '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Syro-Soundboard-Windows-Setup
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+
+      - name: Publish tagged release
+        if: startsWith(github.ref, 'refs/tags/app-v') && steps.desktop_build.outputs.exit_code == '0'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src-tauri/target/release/bundle/nsis/*.exe
+          generate_release_notes: true
+
+      - name: Fail workflow when build failed
+        if: steps.desktop_build.outputs.exit_code != '0'
+        shell: pwsh
+        run: exit 1

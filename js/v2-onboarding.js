@@ -35,9 +35,18 @@ function tutorialTarget(){ return document.querySelector(tutorialSteps[runtime.t
 function renderTutorialStep(){
   $$('.tutorial-focus').forEach(el=>el.classList.remove('tutorial-focus')); const step=tutorialSteps[runtime.tutorialStep]; if(!step)return finishTutorial();
   const target=tutorialTarget(); target?.classList.add('tutorial-focus'); els.tutorialCount.textContent=`${runtime.tutorialStep+1} / ${tutorialSteps.length}`; els.tutorialTitle.textContent=step.title; els.tutorialText.textContent=step.text; els.tutorialNextBtn.textContent=runtime.tutorialStep===tutorialSteps.length-1?'Finish':'Next';
-  requestAnimationFrame(()=>positionTutorialCard(target));
+  requestAnimationFrame(()=>positionTutorialUi(target));
+}
+function positionTutorialUi(target){ positionTutorialSpotlight(target); positionTutorialCard(target); }
+function positionTutorialSpotlight(target){
+  const spot=els.tutorialSpotlight;if(!spot)return;
+  if(!target){spot.hidden=true;return;} spot.hidden=false;
+  const r=target.getBoundingClientRect(), pad=9;
+  spot.style.left=`${Math.max(6,r.left-pad)}px`; spot.style.top=`${Math.max(6,r.top-pad)}px`;
+  spot.style.width=`${Math.min(innerWidth-12,r.width+pad*2)}px`; spot.style.height=`${Math.min(innerHeight-12,r.height+pad*2)}px`;
+  spot.style.borderRadius=getComputedStyle(target).borderRadius||'16px';
 }
 function positionTutorialCard(target){ const card=els.tutorialCard;if(!target){card.style.left='50%';card.style.top='50%';card.style.transform='translate(-50%,-50%)';return;} const r=target.getBoundingClientRect(); const cr=card.getBoundingClientRect(); const gap=14; let left=r.right+gap,top=clamp(r.top,12,innerHeight-cr.height-12); if(left+cr.width>innerWidth-12)left=Math.max(12,r.left-cr.width-gap); if(left<12){left=clamp(r.left,12,innerWidth-cr.width-12);top=clamp(r.bottom+gap,12,innerHeight-cr.height-12)} card.style.left=`${left}px`;card.style.top=`${top}px`;card.style.transform='none'; }
 function nextTutorial(){ if(runtime.tutorialStep>=tutorialSteps.length-1)return finishTutorial(); runtime.tutorialStep++;renderTutorialStep(); }
-function finishTutorial(){ $$('.tutorial-focus').forEach(el=>el.classList.remove('tutorial-focus')); els.tutorialLayer.hidden=true;document.body.classList.remove('body-hidden-overflow');safeLocalSet(TUTORIAL_KEY,'done'); }
+function finishTutorial(){ $$('.tutorial-focus').forEach(el=>el.classList.remove('tutorial-focus')); if(els.tutorialSpotlight)els.tutorialSpotlight.hidden=true; els.tutorialLayer.hidden=true;document.body.classList.remove('body-hidden-overflow');safeLocalSet(TUTORIAL_KEY,'done'); }
 function skipTutorialStep(){ nextTutorial(); }

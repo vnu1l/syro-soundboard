@@ -1,0 +1,6 @@
+commit=a90242995088ada91bfc3ac2426488d4325f31cb
+run_id=32417055868
+exit_code=setup-failed
+timestamp=2026-08-20T20:59:56.3421048Z
+--- log tail ---
+Build log was not created; a setup step failed before compilation.
